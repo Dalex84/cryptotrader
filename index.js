@@ -114,7 +114,10 @@ var getKrakenPrice = function (currency, callback) {
 
 // get bittrex price for coin
 var getBittrexPrice = function (currency, callback) {
-    bittrex.getmarketsummaries(function (data) {
+    bittrex.getmarketsummaries(function (data,error) {
+        if (error) {
+            console.log(error);
+        }
         _.each(data.result, function (ticker) {
             if (ticker.MarketName == "BTC-" + currency) {
                 callback(parseFloat(ticker.Last).toFixed(8));
