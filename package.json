@@ -9,11 +9,12 @@
   "author": "gianluca mazza",
   "license": "MIT",
   "dependencies": {
+    "kraken-exchange-api": "^0.1.0",
     "moment": "^2.14.1",
+    "mysql": "^2.11.1",
+    "node-bter": "^1.0.6",
+    "node.bittrex.api": "^0.2.2",
     "plnx": "0.0.10",
-    "underscore": "^1.8.3",
-    "mysql":"^2.11.1",
-    "kraken-exchange-api":"^0.1.0",
-    "node.bittrex.api":"^0.2.2"
+    "underscore": "^1.8.3"
   }
 }

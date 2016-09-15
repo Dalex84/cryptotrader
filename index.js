@@ -18,9 +18,12 @@ var kraken = new KrakenClient(krakenAPI.key, krakenAPI.privateKey);
 // bittrex node api lib and api config file
 var bittrex = require('./node_modules/node.bittrex.api/node.bittrex.api.js');
 var bittrexAPI = require('./config/bittrex.json');
+// bter node api lib and api config file
+// todo
+//var bter = require('./node_modules/node-bter/bter.js');
 
 // currencies for arbitrage
-var currencies = ["ETC", "ETH"];
+var currencies = ["ETC", "ETH", "XRP"];
 // enabled exchanges, remove unused exchanges if necessary
 var exchanges = ["poloniex", "bittrex", "kraken"];
 
@@ -28,47 +31,41 @@ var exchanges = ["poloniex", "bittrex", "kraken"];
 var configPath = "./config/"
 var apiObj = {};
 var timerValue = 5;
+var debug = true;
 
 var getLastPrice = function (exchange, currency) {
-    console.reset();
+    if (debug) {
+        console.reset();
+    }
+    var poloniexPrice;
+    var krakenPrice;
+    var bittrexPrice;
+
     if (exchange === "poloniex") {
-        // get price from poloniex
-        poloniex.returnTicker({}, function (error, data) {
-            if (error) {
-                console.log(error);
-            }
-            else {
-                _.each(data, function(ticker,name){
-                    if(name === "BTC_" + currency){
-                        console.log(currency + ": poloniex " + parseFloat(ticker.last).toFixed(8));
-                    }
-                });
+        getPoloniexPrice(currency, function (result) {
+            poloniexPrice = result;
+            if (debug) {
+                console.log(currency + ": poloniex " + poloniexPrice);
             }
         });
+
     }
+
     if (exchange === "kraken") {
-        // get price from poloniex
-        kraken.api('Ticker', {"pair": 'X' + currency + 'XXBT'}, function (error, data) {
-            if (error) {
-                console.log(error);
-            }
-            else {
-                _.each(data.result, function(result){
-                    console.log(currency + ": kraken " + parseFloat(result.o).toFixed(8));
-                })
-            }
+        getKrakenPrice(currency, function (result) {
+            krakenPrice = result;
+            if (debug) {
+                    console.log(currency + ": kraken " + krakenPrice);
+                }
         });
     }
     if (exchange === "bittrex") {
-        // get price from bittrex
-        bittrex.getmarketsummaries( function( data ) {
-            _.each(data.result, function(ticker){
-                if(ticker.MarketName == "BTC-"+currency){
-                    console.log(currency + ": bittrex " + parseFloat(ticker.Last).toFixed(8));
-                }
-                
-            })
-        });
+        getBittrexPrice(currency, function (result) {
+            bittrexPrice = result;
+            if (debug) {
+                console.log(currency + ": bittrex " + bittrexPrice);
+            }
+        })
     }
 }
 
@@ -83,4 +80,46 @@ setInterval(function () {
 // reset terminal output
 console.reset = function () {
     return process.stdout.write('\033c');
+}
+
+// get poloniex price for coin
+var getPoloniexPrice = function (currency, callback) {
+    poloniex.returnTicker({}, function (error, data) {
+        if (error) {
+            console.log(error);
+        }
+        else {
+            _.each(data, function (ticker, name) {
+                if (name === "BTC_" + currency) {
+                    callback(parseFloat(ticker.last).toFixed(8));
+                }
+            });
+        }
+    });
+}
+
+// get kraken price for coin
+var getKrakenPrice = function (currency, callback) {
+    kraken.api('Ticker', { "pair": 'X' + currency + 'XXBT' }, function (error, data) {
+        if (error) {
+            console.log(error);
+        }
+        else {
+            _.each(data.result, function (result) {
+                callback(parseFloat(result.a[0]).toFixed(8));
+            })
+        }
+    });
+}
+
+// get bittrex price for coin
+var getBittrexPrice = function (currency, callback) {
+    bittrex.getmarketsummaries(function (data) {
+        _.each(data.result, function (ticker) {
+            if (ticker.MarketName == "BTC-" + currency) {
+                callback(parseFloat(ticker.Last).toFixed(8));
+            }
+
+        })
+    });
 }
